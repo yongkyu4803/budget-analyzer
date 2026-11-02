@@ -11,6 +11,7 @@ kordoc(4.22.13) + budget-index + budget-search 세 부분으로 되어 있습니
 |---|---|---|
 | `kordoc-budget-windows-x64-1.1.0.zip` | Windows 10/11 x64 | 오프라인 키트. Node.js·Python 동봉. 풀고 `check.cmd`부터 실행 |
 | `budget-skills-mac-1.1.0.zip` | macOS (Claude Code 스킬) | `kordoc/scripts/ensure-env.sh`가 환경을 준비 |
+| `budget-written-question-skill.zip` | Claude Code 스킬 | 예결위 서면질의서(HWPX) 작성 스킬 + kordoc. 아래 설명 참고 |
 
 ## 1.0 → 1.1 변경
 
@@ -24,6 +25,12 @@ kordoc 4.22.13은 HWP 본문 구역이 100개를 넘거나 한 구역의 레코�
 과기정통부 2027 사업설명자료 8권으로 시험해 빠졌던 58개를 포함한 777개 사업이 모두 색인됐습니다.
 1.0으로 변환한 Markdown은 다시 변환해야 합니다.
 
+## 서면질의서 작성 스킬
+
+`budget-written-question`은 예산분석기로 정리한 사업별 감액·증액 요구, 부대의견, 정책질의를 예결위 서면질의 양식(2027년도 예산안, HWPX)에 서식 그대로 채웁니다.
+사업을 찾거나 수치를 분석하지 않고, 받은 내용을 `spec.json`으로 적어 `scripts/build.py`로 문서를 만든 뒤 `check.py`로 점검합니다.
+kordoc이 필요합니다. zip에는 kordoc 스킬이 같이 들어 있습니다(`mac/kordoc`와 같은 내용). 사용법은 `written-question/budget-written-question/SKILL.md`.
+
 ## 기존 사용자 업데이트
 
 `prompts/`의 프롬프트를 코딩 에이전트에 붙여넣고 zip 경로만 바꿉니다.
@@ -35,6 +42,7 @@ kordoc 4.22.13은 HWP 본문 구역이 100개를 넘거나 한 구역의 레코�
 
 - `mac/` — 맥용 스킬 묶음 원본(릴리스 zip과 같은 내용)
 - `windows/` — 윈도우 키트 원본. 용량 때문에 `runtime/`(Node·Python), `app/node_modules/`, kordoc 소스 zip은 빠져 있고 릴리스 zip에만 있습니다. 다시 묶는 방법은 `windows/developer/BUILD.md`.
+- `written-question/` — 서면질의서 작성 스킬 원본
 - `prompts/` — 1.0 → 1.1 업데이트 프롬프트
 
 ## 확인하지 못한 것
