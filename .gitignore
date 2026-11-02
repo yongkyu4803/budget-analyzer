@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__/
+*.pyc
+# 동봉 런타임·의존성은 릴리스 zip에만 넣는다
+windows/runtime/
+windows/app/node_modules/
+windows/workspace/
+windows/developer/kordoc-*-source.zip
+mac/kordoc/engine/node_modules/
+mac/kordoc/engine/runtime/
+mac/kordoc/engine/env.json

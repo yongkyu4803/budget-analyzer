@@ -1,0 +1,8 @@
+{
+  "name": "kordoc-budget-offline-kit",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "kordoc": "4.22.13"
+  }
+}

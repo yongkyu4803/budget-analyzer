@@ -1,0 +1,21 @@
+{
+  "schema_version": 3,
+  "adapter": "msit-repeated-toc",
+  "ministry_id": "demo",
+  "ministry": "가상예제부",
+  "fiscal_year": 2031,
+  "edition": {
+    "id": "demo-2031-proposal",
+    "stage": "government_proposal",
+    "published_at": null
+  },
+  "markdown_glob": "markdown/*.md",
+  "expected_volumes": 1,
+  "expected_programs": 2,
+  "default_accounts": {
+    "1": [
+      "general",
+      "일반회계"
+    ]
+  }
+}

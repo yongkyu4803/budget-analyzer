@@ -1,0 +1,23 @@
+[
+  {
+    "name": "node-v24.22.0-win-x64.zip",
+    "url": "https://nodejs.org/dist/v24.22.0/node-v24.22.0-win-x64.zip",
+    "sha256": "f9683a19877e12a9b167305c8db71040d812876359de21f0d2e97c3f321f80c3",
+    "bytes": 37733703,
+    "upstream_sha256_verified": true
+  },
+  {
+    "name": "python-3.14.8-embeddable-amd64.zip",
+    "url": "https://www.python.org/ftp/python/3.14.8/python-3.14.8-embeddable-amd64.zip",
+    "sha256": "80292f0e640e373a54bf09f3b94a1472f976f24a10c5bed0d9622e4e44d67447",
+    "bytes": 12602386,
+    "upstream_sha256_verified": true
+  },
+  {
+    "name": "kordoc-v4.22.13-source.zip",
+    "url": "https://codeload.github.com/chrisryugj/kordoc/zip/refs/tags/v4.22.13",
+    "sha256": "3605ef7ce9c7a6b1b1188d85c99e6d3e5da09175253f47faf68cfc62fbada9e1",
+    "bytes": 9703674,
+    "upstream_sha256_verified": false
+  }
+]

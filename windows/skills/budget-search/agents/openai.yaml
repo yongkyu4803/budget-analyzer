@@ -1,0 +1,6 @@
+interface:
+  display_name: "예산사업 검색"
+  short_description: "전체 예산사업에서 목적·조건으로 검색하고 원문 근거 확인"
+  default_prompt: "$budget-search를 사용해 이 폴더의 예산사업 자료를 검색하고 원문 근거를 제시해줘."
+policy:
+  allow_implicit_invocation: true

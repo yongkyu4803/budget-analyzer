@@ -1,0 +1,7 @@
+각 구성 요소의 라이선스와 고지를 원래 위치에 동봉했습니다.
+Node.js: runtime/node/LICENSE (제3자 고지 포함)
+Python: runtime/python/LICENSE.txt
+kordoc: app/node_modules/kordoc/LICENSE, NOTICE, THIRD_PARTY/
+JavaScript 의존성: app/node_modules 각 패키지의 LICENSE/license 및 package.json
+예산 스킬 기반 코드: skills/budget-index/LICENSE, skills/budget-search/LICENSE
+배포용 추가 Python 실행기와 문서는 MIT 라이선스이며 developer/LICENSE-kit.txt를 참고하세요.

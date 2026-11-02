@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "schema": 3,
+  "files": {
+    "budget_core.py": "24235335d005701ff3f5f913a8cd7b0c779ae5a68e2699c3157a6be7c6ca45ed",
+    "msit_adapter.py": "d782db4bd8de47c24b60821ff8c150cafdf80c4edaf10780e021533818832eb7"
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "예산사업 인덱스"
+  short_description: "예산사업 원문을 판본·금액·근거 위치와 함께 구조화하고 검증"
+  default_prompt: "$budget-index를 사용해 이 폴더의 예산사업 자료를 색인하고 검증해줘."
+policy:
+  allow_implicit_invocation: true
