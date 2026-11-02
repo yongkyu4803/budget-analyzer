@@ -10,6 +10,102 @@ Claude Code·Codex 같은 코딩 에이전트에 붙여서 씁니다.
 | budget-search | 색인에서 사업 검색, 원문 표 확인 |
 | budget-written-question | 정리한 증액·감액 내용을 예결위 서면질의서(HWPX) 양식에 채움 (맥 전용) |
 
+**가장 쉬운 설치**: Claude Code·Codex 같은 코딩 에이전트에 이렇게 부탁하세요.
+
+```
+https://github.com/yongkyu4803/budget-analyzer 의 README를 읽고 예산분석기를 설치해줘.
+```
+
+직접 설치하려면 [1번](#1-내-컴퓨터에-맞는-파일-받기)부터 따라 하세요.
+
+---
+
+## 코딩 에이전트에게 (설치 지침)
+
+사용자가 이 저장소로 설치를 부탁하면 이 절을 따른다. 아래 명령은 그대로 실행할 수 있게 썼다.
+
+**지킬 것**
+
+1. 운영체제를 먼저 확인한다. Windows x64는 [A](#a-windows-x64), macOS는 [B](#b-macos)를 따른다. 그 밖의 운영체제(Linux 등)는 지원하지 않으므로 멈추고 알린다.
+2. 설치 파일은 **릴리스 zip**에서 받는다. 저장소를 clone해서 `windows/`·`mac/` 폴더를 설치에 쓰지 않는다. `windows/`에는 Node·Python 런타임과 kordoc 의존성이 빠져 있다.
+3. 기존 파일을 덮어쓰지 않는다. 설치 위치나 같은 이름의 스킬이 이미 있으면 멈추고 사용자에게 알린다. 1.0을 쓰던 사용자라면 `prompts/`의 업데이트 프롬프트를 따른다.
+4. 스킬 폴더는 지금 쓰는 에이전트에 맞춘다. Claude Code는 `~/.claude/skills`, Codex는 `~/.codex/skills`다. 서면질의서 스킬은 Claude Code(macOS)에서만 쓴다.
+5. 관리자 권한, 전역 설치, PATH 변경을 하지 않는다. 예외로, macOS에 Python 3.10 이상이 없으면 설치 전에 사용자에게 묻는다.
+6. 윈도우 `START.cmd`는 사람용 메뉴라 입력을 기다린다. 에이전트는 `check.cmd`와 `kit.cmd`만 쓴다.
+7. 끝나면 설치 경로, 점검 결과(실제 출력), 그리고 새 세션을 열어야 스킬이 보인다는 점을 사용자에게 알린다.
+
+### A. Windows x64
+
+아래를 `install-budget.ps1`로 저장해 실행한다. bash 환경이라면 `powershell -NoProfile -ExecutionPolicy Bypass -File install-budget.ps1`로 실행한다. 설치 위치 `C:\kordoc-budget-windows-x64`를 만들 수 없으면 `$kit`과 압축 풀 위치를 `$env:USERPROFILE` 아래로 바꾼다. 경로는 짧게 둔다.
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+$kit = 'C:\kordoc-budget-windows-x64'
+if (Test-Path $kit) { throw "STOP: $kit already exists" }
+$zip = Join-Path $env:TEMP 'kordoc-budget-windows-x64-1.1.0.zip'
+Invoke-WebRequest -UseBasicParsing -OutFile $zip -Uri 'https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.0/kordoc-budget-windows-x64-1.1.0.zip'
+$hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+if ($hash -ne 'e49b9ffa3e08252817ce71f7b84689321403ad563bafddfb4d5c3b395ec43151') { throw "SHA-256 mismatch: $hash" }
+Unblock-File $zip
+Expand-Archive -Path $zip -DestinationPath (Split-Path $kit)
+& "$kit\check.cmd"
+if ($LASTEXITCODE -ne 0) { throw "check.cmd failed: exit $LASTEXITCODE" }
+```
+
+성공 기준: 종료 코드 0, 그리고 출력에 `"ok": true`, `"kit_version": "1.1.0"`, `"test_mode": "windows-bundled-runtime"`이 있어야 한다.
+실패하면 출력을 그대로 보여주고 멈춘다. 회사 PC에서 exe 실행이 막혔다면 사용자가 전산 담당자에게 문의해야 한다.
+
+이어서 스킬을 연결한다. Codex라면 `.claude`를 `.codex`로 바꾼다. 같은 이름의 스킬이 있으면 `kit.cmd`가 알아서 설치를 멈춘다.
+
+```powershell
+& 'C:\kordoc-budget-windows-x64\kit.cmd' install-skills --target "$env:USERPROFILE\.claude\skills"
+```
+
+설치 뒤에는 키트 폴더를 옮기거나 지우면 안 된다고 사용자에게 알린다. 각 스킬의 `portable-kit.json`이 이 폴더를 가리킨다.
+
+### B. macOS
+
+먼저 `python3 --version`으로 Python이 3.10 이상인지 확인한다. 3.10보다 낮거나 Python이 없으면 사용자에게 알린다. 그다음 [python.org 설치 파일](https://www.python.org/downloads/macos/)로 직접 설치할지, Homebrew로 `brew install python`을 실행해도 될지 묻는다. Node.js는 아래 스크립트가 공식 파일을 SHA-256으로 확인한 뒤 스킬 폴더 안에만 설치한다. 처음 한 번은 인터넷이 필요하다.
+
+```bash
+bash <<'EOF'
+set -e
+SK="$HOME/.claude/skills"   # Codex면 "$HOME/.codex/skills"
+for s in kordoc budget-index budget-search; do
+  if [ -e "$SK/$s" ]; then echo "STOP: $SK/$s already exists"; exit 1; fi
+done
+TMP="$(mktemp -d)"
+curl -fsSL -o "$TMP/mac.zip" https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.0/budget-skills-mac-1.1.0.zip
+unzip -q "$TMP/mac.zip" -d "$TMP"
+mkdir -p "$SK"
+cp -R "$TMP/budget-skills-mac/kordoc" "$TMP/budget-skills-mac/budget-index" "$TMP/budget-skills-mac/budget-search" "$SK/"
+bash "$SK/kordoc/scripts/ensure-env.sh"
+EOF
+```
+
+성공 기준: 종료 코드 0, 그리고 마지막 출력의 JSON에 `"ok": true`와 `"kordoc_version": "4.22.13"`이 있어야 한다. 이어서 아래 명령으로 다시 점검한다. 종료 코드 0이면 된다.
+
+```bash
+bash ~/.claude/skills/kordoc/scripts/ensure-env.sh --check-only
+```
+
+**서면질의서 스킬** (사용자가 원할 때, Claude Code만):
+
+```bash
+bash <<'EOF'
+set -e
+SK="$HOME/.claude/skills"
+if [ -e "$SK/budget-written-question" ]; then echo "STOP: $SK/budget-written-question already exists"; exit 1; fi
+if [ ! -f "$SK/kordoc/engine/env.json" ]; then echo "STOP: install the macOS kordoc skill first (section B)"; exit 1; fi
+TMP="$(mktemp -d)"
+curl -fsSL -o "$TMP/wq.zip" https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.0/budget-written-question-skill.zip
+unzip -q "$TMP/wq.zip" -d "$TMP"
+cp -R "$TMP/budget-written-question" "$SK/"
+echo "installed: $SK/budget-written-question"
+EOF
+```
+
 ---
 
 ## 1. 내 컴퓨터에 맞는 파일 받기
