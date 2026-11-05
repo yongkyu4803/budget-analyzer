@@ -1,6 +1,6 @@
 ---
 name: budget-search
-description: 로컬 예산사업 인덱스 전체에서 사업명·코드·정책 목적·참여 경로·금액 조건으로 검색하고 원문 근거를 제시한다. 예산사업 탐색, 예산액 확인, 관련 사업 비교 요청에 사용한다. 일반 문서 검색이나 새 인덱스 구축은 해당 전용 스킬을 사용한다.
+description: 로컬 예산사업 인덱스 전체에서 사업명·코드·정책 목적·참여 경로·금액 조건으로 검색하고 원문 근거를 제시한다. 예산사업 탐색, 예산액 확인, 관련 사업 비교 요청에 사용한다. 국회 검토보고서가 해당 사업에서 지적한 쟁점을 찾을 때도 사용한다. 일반 문서 검색이나 새 인덱스 구축은 해당 전용 스킬을 사용한다.
 ---
 
 ## 이 배포본의 오프라인 실행
@@ -57,3 +57,21 @@ python3 /absolute/path/budget-search/scripts/budget_core.py --root /absolute/wor
 응답은 결론을 먼저 쓰고 다음을 연결한다: 사업명·코드·소관/회계·연도/판본 → 원문 값과 단위 → 원문 파일/행·절 → 검증 범위와 한계. 실제 로컬 파일은 절대 경로 링크를 사용한다. 검토 노트의 해석보다 최신으로 확인된 해당 판본 원문을 우선한다.
 
 결과 없음은 ‘이 판본·검색 범위에서 확인하지 못함’이다. 전체 정부사업에 없다는 의미로 확대하지 않는다. 회사 적합성·공모 가능성·정무적 함의는 원문 사실과 구분하여 요청 범위에서 분석한다. 검색 결과의 수혜자를 곧바로 신청 가능 기업으로 제시하지 않는다.
+
+## 국회 검토보고서 검색 (review)
+
+윈도우 배포본에서는 아래 `python3 …/review_core.py` 예시를 패키지의 `review.cmd`에 같은 인자로 전달한다. 예: `"C:\kordoc-kit\review.cmd" --root "C:\예산자료" build`.
+
+작업 폴더에 `.budget-index/review.sqlite`가 있으면(상임위 검토보고서 색인, `budget-index` 스킬의 review 절 참조) 같은 사업에 대해 **국회가 어떤 쟁점을 지적했는지** 검색할 수 있다. 사업설명자료(`budget_core.py`)는 사업이 무엇이고 얼마인지, 검토보고서(`review_core.py`)는 그 사업의 무엇이 문제로 지적됐는지를 담는다. 질문이 지적·쟁점·개선 요구·"할 필요가 있음"에 관한 것이면 검토보고서를 찾고, 사업 내용·산출근거·금액이면 사업설명자료를 찾는다. 둘 다 필요한 질문은 코드로 이어서 본다.
+
+```bash
+python3 /absolute/path/budget-search/scripts/review_core.py --root /absolute/workspace search 'GPU 임차' --limit 10
+python3 /absolute/path/budget-search/scripts/review_core.py --root /absolute/workspace search --dept 가상정책관 --account 일반회계
+python3 /absolute/path/budget-search/scripts/review_core.py --root /absolute/workspace show 1111-111 --issue 임차
+```
+
+- 결과는 사업 단위이며 `section`(검토요지 또는 `나) 쟁점 제목`), `matched_sections`, `issue_titles`, 원문 행 번호, 표 제목·`(단위: …)`을 담는다. `program_link`에 사업설명자료의 같은 사업이 있으면 UID와 위치가 나온다. 코드가 같아도 회계가 다르면 다른 사업일 수 있어(2027년 자료에서 36개 코드가 중복) **제목이 맞는 사업만** 연결하고, 코드만 같은 사업은 `same_code_other_programs`로 따로 보여 준다.
+- `show 코드 --issue 나`는 해당 쟁점 구간의 원문과 그 안의 표 목록(제목·단위·행)을 반환한다. 표의 수치로 답하기 전에 전체 표를 읽고 연도·단위·열 머리글(`본예산(A)`, `추경`, `예산안(B)` 등)을 확인한다.
+- 총괄 주제(코드 없음)는 `--scope units`에서 검색되지만 사업설명자료와 연결되지 않는다. Ⅰ 개관의 총괄표·회계별 현황은 `--scope contexts`로 찾는다.
+- `account_source: toc`는 본문에 【회계】 머리글이 없어 목차 기준으로 채웠다는 뜻이다.
+- 이 색인은 2027년도 과기정통부 소관 검토보고서(과방위)로 검증했다. 다른 상임위 보고서에서는 결과를 원문 줄과 대조해 확인한다. 검토보고서의 문장은 전문위원의 검토의견이며 확정된 정부 결정이 아니다.

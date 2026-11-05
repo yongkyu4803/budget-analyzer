@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "adapter": "committee-review-report",
+  "ministry_id": "msit",
+  "ministry": "과학기술정보통신부",
+  "fiscal_year": 2027,
+  "committee": {
+    "id": "msit-committee",
+    "name": "과학기술정보방송통신위원회",
+    "short": "과방위"
+  },
+  "edition": {
+    "id": "2027-committee-review-202611",
+    "stage": "committee_review",
+    "published_at": "2026-11",
+    "date_note": "표지 2026. 11.; 상세 일자 미확인"
+  },
+  "markdown_glob": "review-md/*.md",
+  "expected_units": 60
+}

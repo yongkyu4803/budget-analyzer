@@ -19,7 +19,7 @@ KIT = Path(__file__).resolve().parent.parent
 SUPPORTED = {'.hwp', '.hwpx', '.hml', '.docx', '.xls', '.xlsx'}
 NODE_VERSION = 'v24.22.0'
 PYTHON_VERSION = (3, 14, 8)
-KIT_VERSION = '1.1.0'
+KIT_VERSION = '1.1.1'
 # kordoc 4.22.13 은 HWP 구역 100개·구역당 레코드 50만 개를 넘는 부분을 경고 없이 버린다.
 # 1.1.0 은 동봉 dist 의 상한을 올려 두었다(developer/patch-limits.cjs).
 OLD_LIMITS = ('var MAX_SECTIONS = 100;', 'var MAX_RECORDS = 5e5;')
@@ -153,6 +153,33 @@ def budget_module():
     return budget_core
 
 
+def review_module():
+    sys.path.insert(0, str(KIT / 'skills/budget-index/scripts'))
+    import review_core
+    return review_core
+
+
+def review_selftest():
+    """가상 검토보고서로 목차 대조·색인·검색·쟁점 조회를 시험한다 (사업설명자료 시험과 별도 작업 폴더)."""
+    with tempfile.TemporaryDirectory(prefix='kordoc-review-check-') as temp:
+        root = Path(temp) / '한국어 공백 검토'
+        (root / '.budget-index').mkdir(parents=True)
+        (root / 'review-md').mkdir()
+        shutil.copy2(KIT / 'samples/review-source.md', root / 'review-md/가상 검토보고서.md')
+        shutil.copy2(KIT / 'samples/review-config.json', root / '.budget-index/review-config.json')
+        r = review_module()
+        built = r.build(root)
+        verified = r.verify(root)
+        hit = r.search(root, {'must': [['GPU']]})
+        shown = r.show(root, '1111-111', issue='나')
+        raw = shown['segments'][0]['raw']
+        ok = (built['unit_count'] == 3 and built['issue_count'] == 4 and verified['ok'] and hit['total'] == 1
+              and all(token in raw for token in ['백만원', '1,500']) and shown['tables'][0]['unit'] == '백만원')
+        if not ok:
+            raise ValueError('검토보고서 예제 색인·검색 결과가 기대와 다릅니다.')
+        return {'review_units': built['unit_count'], 'review_issues': built['issue_count'], 'review_gpu_matches': hit['total']}
+
+
 def check_manifest():
     manifest = json.loads((KIT / 'MANIFEST.json').read_text(encoding='utf-8'))
     errors = []
@@ -202,30 +229,31 @@ def check(host_node=None):
         raw = '\n'.join(s['raw'] for s in shown['segments'])
         if not all(token in raw for token in ['백만원', '2031', '1,500']):
             raise ValueError('예제의 금액·연도·단위가 보존되지 않았습니다.')
+    review = review_selftest()
     report = {'ok': True, 'kit_version': KIT_VERSION, 'test_mode': 'host-code-test' if host_node else 'windows-bundled-runtime',
               'node': node, 'python': sys.version.split()[0], 'sqlite': sqlite3.sqlite_version,
               'kordoc': version, 'kordoc_hwp_limits': limits, 'manifest_files_checked': count,
               'pipeline': 'HWPX -> Markdown -> budget index -> search -> source table',
-              'programs': 2, 'gpu_rental_matches': 1,
+              'programs': 2, 'gpu_rental_matches': 1, **review,
               'time_utc': datetime.now(timezone.utc).isoformat()}
     write_json(KIT / 'diagnostics/last-check.json', report)
     return report
 
 
-def init_workspace(root, config):
+def init_workspace(root, config, review=False):
     root = Path(root).resolve()
     config = Path(config).resolve()
     value = json.loads(config.read_text(encoding='utf-8-sig'))
-    target = root / '.budget-index/config.json'
+    target = root / ('.budget-index/review-config.json' if review else '.budget-index/config.json')
     if target.exists():
         raise ValueError('설정이 이미 있습니다. 기존 파일을 직접 검토·수정하세요: ' + str(target))
     # Validate the supplied configuration before publishing it.
     with tempfile.TemporaryDirectory() as temp:
         trial = Path(temp)
-        write_json(trial / '.budget-index/config.json', value)
-        budget_module().config_at(trial)
+        write_json(trial / ('.budget-index/review-config.json' if review else '.budget-index/config.json'), value)
+        (review_module() if review else budget_module()).config_at(trial)
     write_json(target, value)
-    return {'config': str(target), 'next': 'budget.cmd --root "WORKSPACE" build'}
+    return {'config': str(target), 'next': ('review.cmd' if review else 'budget.cmd') + ' --root "WORKSPACE" build'}
 
 
 def install_skills(target):
@@ -274,6 +302,11 @@ def main(argv=None):
         sys.argv = [str(KIT / 'skills/budget-index/scripts/budget_core.py'), *argv[1:]]
         runpy.run_path(sys.argv[0], run_name='__main__')
         return
+    if argv[:1] == ['review']:
+        sys.path.insert(0, str(KIT / 'skills/budget-index/scripts'))
+        sys.argv = [str(KIT / 'skills/budget-index/scripts/review_core.py'), *argv[1:]]
+        runpy.run_path(sys.argv[0], run_name='__main__')
+        return
     if argv[:1] == ['kordoc']:
         result = run_kordoc(argv[1:] or ['--help'], host_node)
         print(result.stdout, end='')
@@ -290,6 +323,7 @@ def main(argv=None):
     c = sub.add_parser('init')
     c.add_argument('--root', type=Path, required=True)
     c.add_argument('--config', type=Path, required=True)
+    c.add_argument('--review', action='store_true', help='상임위 검토보고서용 설정(review-config.json)으로 설치')
     c = sub.add_parser('install-skills')
     c.add_argument('--target', type=Path, required=True)
     a = p.parse_args(argv)
@@ -300,7 +334,7 @@ def main(argv=None):
     elif a.command == 'convert':
         result = convert(a.source, a.output, a.images, a.max_unzip_mb, host_node)
     elif a.command == 'init':
-        result = init_workspace(a.root, a.config)
+        result = init_workspace(a.root, a.config, a.review)
     else:
         result = install_skills(a.target)
     print(json.dumps(result, ensure_ascii=False, indent=2))

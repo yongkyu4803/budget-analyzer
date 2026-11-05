@@ -98,6 +98,18 @@ class PortableTests(unittest.TestCase):
             p.init_workspace(target, config)
         self.assertEqual((target/'.budget-index/config.json').read_bytes(), before)
 
+    def test_review_selftest_and_init(self):
+        result = p.review_selftest()
+        self.assertEqual((result['review_units'], result['review_issues'], result['review_gpu_matches']), (3, 4, 1))
+        target = self.root/'ws'
+        out = p.init_workspace(target, KIT/'samples/review-config.json', review=True)
+        self.assertTrue(out['config'].endswith('review-config.json'))
+        before = (target/'.budget-index/review-config.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, '이미 있습니다'):
+            p.init_workspace(target, KIT/'samples/review-config.json', review=True)
+        self.assertEqual((target/'.budget-index/review-config.json').read_bytes(), before)
+        self.assertFalse((target/'.budget-index/config.json').exists())  # 사업설명자료 설정과 섞이지 않는다
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

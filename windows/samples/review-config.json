@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "adapter": "committee-review-report",
+  "ministry_id": "demo",
+  "ministry": "가상예제부",
+  "fiscal_year": 2031,
+  "committee": {
+    "id": "demo",
+    "name": "가상예제위원회",
+    "short": "가상위"
+  },
+  "edition": {
+    "id": "demo-2031-committee-review",
+    "stage": "committee_review",
+    "published_at": null
+  },
+  "markdown_glob": "review-md/*.md",
+  "expected_units": 3
+}
