@@ -29,7 +29,7 @@ https://github.com/yongkyu4803/budget-analyzer 의 README를 읽고 예산분석
 
 1. 운영체제를 먼저 확인한다. Windows x64는 [A](#a-windows-x64), macOS는 [B](#b-macos)를 따른다. 그 밖의 운영체제(Linux 등)는 지원하지 않으므로 멈추고 알린다.
 2. 설치 파일은 **릴리스 zip**에서 받는다. 저장소를 clone해서 `windows/`·`mac/` 폴더를 설치에 쓰지 않는다. `windows/`에는 Node·Python 런타임과 kordoc 의존성이 빠져 있다.
-3. 기존 파일을 덮어쓰지 않는다. 설치 위치나 같은 이름의 스킬이 이미 있으면 멈추고 사용자에게 알린다. 1.0을 쓰던 사용자라면 `prompts/`의 업데이트 프롬프트를 따른다.
+3. 기존 파일을 덮어쓰지 않는다. 설치 위치나 같은 이름의 스킬이 이미 있으면 멈추고 사용자에게 알린다. 1.0 또는 1.1.0을 쓰던 사용자라면 `prompts/`의 업데이트 프롬프트를 따른다.
 4. 스킬 폴더는 지금 쓰는 에이전트에 맞춘다. Claude Code는 `~/.claude/skills`, Codex는 `~/.codex/skills`다. 서면질의서 스킬은 Claude Code(macOS)에서만 쓴다.
 5. 관리자 권한, 전역 설치, PATH 변경을 하지 않는다. 예외로, macOS에 Python 3.10 이상이 없으면 설치 전에 사용자에게 묻는다.
 6. 윈도우 `START.cmd`는 사람용 메뉴라 입력을 기다린다. 에이전트는 `check.cmd`와 `kit.cmd`만 쓴다.
@@ -44,17 +44,17 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $kit = 'C:\kordoc-budget-windows-x64'
 if (Test-Path $kit) { throw "STOP: $kit already exists" }
-$zip = Join-Path $env:TEMP 'kordoc-budget-windows-x64-1.1.0.zip'
-Invoke-WebRequest -UseBasicParsing -OutFile $zip -Uri 'https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.0/kordoc-budget-windows-x64-1.1.0.zip'
+$zip = Join-Path $env:TEMP 'kordoc-budget-windows-x64-1.1.1.zip'
+Invoke-WebRequest -UseBasicParsing -OutFile $zip -Uri 'https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.1/kordoc-budget-windows-x64-1.1.1.zip'
 $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-if ($hash -ne 'e49b9ffa3e08252817ce71f7b84689321403ad563bafddfb4d5c3b395ec43151') { throw "SHA-256 mismatch: $hash" }
+if ($hash -ne 'fc86744182257d3d6783f1a0504e7c5957efe4151056888b09262147c9d2ac46') { throw "SHA-256 mismatch: $hash" }
 Unblock-File $zip
 Expand-Archive -Path $zip -DestinationPath (Split-Path $kit)
 & "$kit\check.cmd"
 if ($LASTEXITCODE -ne 0) { throw "check.cmd failed: exit $LASTEXITCODE" }
 ```
 
-성공 기준: 종료 코드 0, 그리고 출력에 `"ok": true`, `"kit_version": "1.1.0"`, `"test_mode": "windows-bundled-runtime"`이 있어야 한다.
+성공 기준: 종료 코드 0, 그리고 출력에 `"ok": true`, `"kit_version": "1.1.1"`, `"test_mode": "windows-bundled-runtime"`이 있어야 한다.
 실패하면 출력을 그대로 보여주고 멈춘다. 회사 PC에서 exe 실행이 막혔다면 사용자가 전산 담당자에게 문의해야 한다.
 
 이어서 스킬을 연결한다. Codex라면 `.claude`를 `.codex`로 바꾼다. 같은 이름의 스킬이 있으면 `kit.cmd`가 알아서 설치를 멈춘다.
@@ -77,7 +77,7 @@ for s in kordoc budget-index budget-search; do
   if [ -e "$SK/$s" ]; then echo "STOP: $SK/$s already exists"; exit 1; fi
 done
 TMP="$(mktemp -d)"
-curl -fsSL -o "$TMP/mac.zip" https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.0/budget-skills-mac-1.1.0.zip
+curl -fsSL -o "$TMP/mac.zip" https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.1/budget-skills-mac-1.1.1.zip
 unzip -q "$TMP/mac.zip" -d "$TMP"
 mkdir -p "$SK"
 cp -R "$TMP/budget-skills-mac/kordoc" "$TMP/budget-skills-mac/budget-index" "$TMP/budget-skills-mac/budget-search" "$SK/"
@@ -100,7 +100,7 @@ SK="$HOME/.claude/skills"
 if [ -e "$SK/budget-written-question" ]; then echo "STOP: $SK/budget-written-question already exists"; exit 1; fi
 if [ ! -f "$SK/kordoc/engine/env.json" ]; then echo "STOP: install the macOS kordoc skill first (section B)"; exit 1; fi
 TMP="$(mktemp -d)"
-curl -fsSL -o "$TMP/wq.zip" https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.0/budget-written-question-skill.zip
+curl -fsSL -o "$TMP/wq.zip" https://github.com/yongkyu4803/budget-analyzer/releases/download/v1.1.1/budget-written-question-skill.zip
 unzip -q "$TMP/wq.zip" -d "$TMP"
 cp -R "$TMP/budget-written-question" "$SK/"
 echo "installed: $SK/budget-written-question"
@@ -115,11 +115,11 @@ EOF
 
 | 내 컴퓨터 | 받을 파일 |
 |---|---|
-| 윈도우 | `kordoc-budget-windows-x64-1.1.0.zip` (약 71MB) |
-| 맥 | `budget-skills-mac-1.1.0.zip` |
+| 윈도우 | `kordoc-budget-windows-x64-1.1.1.zip` (약 71MB) |
+| 맥 | `budget-skills-mac-1.1.1.zip` |
 | 맥 + 서면질의서도 쓸 때 | 위 파일과 `budget-written-question-skill.zip` |
 
-이미 1.0을 쓰고 있다면 아래 [기존 1.0 사용자](#기존-10-사용자) 항목으로 가세요.
+이미 1.0 또는 1.1.0을 쓰고 있다면 아래 [이전 버전 사용자](#이전-버전-사용자) 항목으로 가세요.
 
 ---
 
@@ -143,7 +143,7 @@ EOF
 3. 결과에 아래 두 줄이 보이면 성공입니다.
    ```
    "ok": true,
-   "kit_version": "1.1.0",
+   "kit_version": "1.1.1",
    ```
 4. 아무 키나 눌러 창을 닫습니다.
 
@@ -188,7 +188,7 @@ Claude Code가 설치돼 있어야 합니다. 처음 한 번은 인터넷이 필
 
 ### 3-1. 압축 풀기
 
-다운로드 폴더에서 `budget-skills-mac-1.1.0.zip`을 더블클릭하면 `budget-skills-mac` 폴더가 생깁니다.
+다운로드 폴더에서 `budget-skills-mac-1.1.1.zip`을 더블클릭하면 `budget-skills-mac` 폴더가 생깁니다.
 
 ### 3-2. 스킬 복사
 
@@ -202,7 +202,7 @@ mkdir -p ~/.claude/skills
 cp -R ~/Downloads/budget-skills-mac/kordoc ~/Downloads/budget-skills-mac/budget-index ~/Downloads/budget-skills-mac/budget-search ~/.claude/skills/
 ```
 
-`~/.claude/skills`에 같은 이름의 폴더가 이미 있으면 위 명령이 덮어씁니다. 1.0을 쓰던 중이라면 이 명령 대신 [기존 1.0 사용자](#기존-10-사용자) 방법을 쓰세요.
+`~/.claude/skills`에 같은 이름의 폴더가 이미 있으면 위 명령이 덮어씁니다. 1.0 또는 1.1.0을 쓰던 중이라면 이 명령 대신 [이전 버전 사용자](#이전-버전-사용자) 방법을 쓰세요.
 
 ### 3-3. 실행 환경 준비
 
@@ -247,16 +247,19 @@ zip 안에도 `kordoc` 폴더가 있지만 3번에서 설치한 것과 같으므
 
 ---
 
-## 기존 1.0 사용자
+## 이전 버전 사용자
 
-1.0의 kordoc은 큰 HWP 문서의 뒤쪽을 경고 없이 버렸습니다. 그래서 사업이 빠지거나 색인 만들기가 `오류: (719, 777)`처럼 멈췄습니다. 1.1에서 고쳤습니다.
+1.0 또는 1.1.0을 쓰고 있다면 아래 프롬프트로 1.1.1로 올립니다.
+
+- **1.1.1** (2026-11-05): 국회 상임위 검토보고서 색인(review)을 추가했습니다. 기존 사업설명자료 색인은 그대로입니다.
+- **1.1.0**: 1.0의 kordoc은 큰 HWP 문서의 뒤쪽을 경고 없이 버렸습니다. 그래서 사업이 빠지거나 색인 만들기가 `오류: (719, 777)`처럼 멈췄습니다. 1.1.0에서 고쳤습니다. 1.0에서 올라오는 경우에만 해당합니다.
 
 `prompts/` 폴더의 프롬프트를 열어 내용을 복사하고 코딩 에이전트에 붙여넣습니다. `[zip 경로]`는 받은 zip 파일 경로로 바꿉니다.
 
-- 윈도우: [prompts/윈도우_1.0→1.1_업데이트.md](prompts/윈도우_1.0→1.1_업데이트.md)
-- 맥: [prompts/맥_1.0→1.1_업데이트.md](prompts/맥_1.0→1.1_업데이트.md)
+- 윈도우: [prompts/윈도우_업데이트_1.1.1.md](prompts/윈도우_업데이트_1.1.1.md)
+- 맥: [prompts/맥_업데이트_1.1.1.md](prompts/맥_업데이트_1.1.1.md)
 
-에이전트가 기존 파일을 지우지 않고 새 버전을 설치합니다. 1.0으로 만든 작업 폴더는 새 폴더에 다시 변환합니다.
+에이전트가 기존 파일을 지우지 않고 새 버전을 설치합니다. 1.0으로 만든 작업 폴더는 새 폴더에 다시 변환합니다. 1.1.0에서 올라오는 경우에는 다시 변환할 필요가 없습니다.
 
 ---
 
@@ -268,7 +271,7 @@ zip 안에도 `kordoc` 폴더가 있지만 3번에서 설치한 것과 같으므
 | "경로가 너무 깁니다" | `C:\`처럼 짧은 경로에 다시 풀기 |
 | 회사 PC에서 실행이 막힘 | 보안 정책으로 exe 실행이 막힌 경우라 전산 담당자에게 문의 |
 | check에서 manifest 오류 | 압축이 덜 풀렸거나 파일이 바뀐 것. zip을 새로 받아 다시 풀기 |
-| `install-skills`가 "기존 스킬을 보존하기 위해 중단" | 같은 이름의 스킬이 이미 있음. 1.0 사용자는 업데이트 프롬프트를 사용 |
+| `install-skills`가 "기존 스킬을 보존하기 위해 중단" | 같은 이름의 스킬이 이미 있음. 이전 버전 사용자는 업데이트 프롬프트를 사용 |
 | Claude Code에 스킬이 안 보임 | Claude Code를 완전히 닫았다 다시 열기 |
 | 사업이 일부만 색인됨 | 1.0으로 변환한 Markdown일 수 있음. 1.1로 원본을 다시 변환 |
 
@@ -287,7 +290,7 @@ zip 안에도 `kordoc` 폴더가 있지만 3번에서 설치한 것과 같으므
 
 **윈도우는 실기에서 시험하지 못했습니다.** `windows/`의 review 기능(`review.cmd`, `kit.cmd init --review`, `check.cmd`의 가상 보고서 시험)은 macOS의 호스트 Python으로만 실행해 봤습니다. 윈도우 PC에서는 `check.cmd`로 먼저 확인하세요.
 
-이 기능은 1.1.1에 포함됩니다(`mac/VERSION`, `windows/app/portable.py`의 `KIT_VERSION`은 1.1.1로 올렸습니다). 다만 **1.1.1 릴리스 zip은 아직 만들지 않았습니다.** 위의 설치 지침이 가리키는 릴리스 주소·zip 이름·SHA-256·`kit_version` 기대값은 아직 v1.1.0 기준 그대로이며, 1.1.1 zip을 만들어 게시한 뒤에 교체해야 합니다(윈도우 zip은 `windows/developer/BUILD.md`대로 `repack.py`로 다시 만듭니다). 그 전까지 설치 지침으로 받는 것은 review 기능이 없는 1.1.0입니다.
+이 기능은 1.1.1부터 들어 있습니다. 업데이트 방법은 아래 [이전 버전 사용자](#이전-버전-사용자)를 보세요. 윈도우 zip은 `windows/developer/BUILD.md`대로 `repack.py`로 다시 만듭니다.
 
 사용법은 `mac/budget-index/SKILL.md`의 "국회 검토보고서 색인" 절, 데이터 계약은 `mac/budget-index/references/review-schema.md`에 있습니다.
 
@@ -306,4 +309,4 @@ zip 안에도 `kordoc` 폴더가 있지만 3번에서 설치한 것과 같으므
 - `windows/` — 윈도우 키트 원본. 용량 때문에 `runtime/`(Node·Python), `app/node_modules/`, kordoc 소스 zip은 빠져 있고 릴리스 zip에만 있습니다. 다시 묶는 방법은 `windows/developer/BUILD.md`.
 - `mac/` — 맥용 스킬 묶음 원본(릴리스 zip과 같은 내용)
 - `written-question/` — 서면질의서 작성 스킬 원본
-- `prompts/` — 1.0 → 1.1 업데이트 프롬프트
+- `prompts/` — 1.0·1.1.0 → 1.1.1 업데이트 프롬프트
